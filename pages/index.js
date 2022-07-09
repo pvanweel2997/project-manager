@@ -320,6 +320,10 @@ const ProjectManager = () => {
             setRows={setRows}
             page={page}
             setPage={setPage}
+            websiteChecked={websiteChecked}
+            iOSChecked={iOSChecked}
+            androidChecked={androidChecked}
+            softwareChecked={softwareChecked}
           />
         </Grid>
         <Dialog

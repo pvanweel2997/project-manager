@@ -225,8 +225,16 @@ const EnhancedTableToolbar = ({
     </Toolbar>
   );
 };
-
-export default function EnhancedTable({ rows, setRows, page, setPage }) {
+export default function EnhancedTable({
+  rows,
+  setRows,
+  page,
+  setPage,
+  websiteChecked,
+  iOSChecked,
+  androidChecked,
+  softwareChecked,
+}) {
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('name');
   const [selected, setSelected] = React.useState([]);
@@ -294,6 +302,37 @@ export default function EnhancedTable({ rows, setRows, page, setPage }) {
 
   const isSelected = name => selected.indexOf(name) !== -1;
 
+  const switchFilters = () => {
+    console.log(rows);
+    if (!websiteChecked && !iOSChecked && !androidChecked && !softwareChecked) {
+      return rows;
+    }
+    const websites = rows.filter(row =>
+      websiteChecked ? row.service === 'Website' : null
+    );
+    const iOSApps = rows.filter(row =>
+      iOSChecked ? row.platform.includes('iOS') : null
+    );
+    const androidApps = rows.filter(row =>
+      androidChecked ? row.platform.includes('Android') : null
+    );
+    const softwareApps = rows.filter(row =>
+      softwareChecked ? row.service === 'Custom Software' : null
+    );
+    let newRows = websites.concat(
+      iOSApps.filter(item => websites.indexOf(item) < 0)
+    );
+
+    let newRows2 = newRows.concat(
+      androidApps.filter(item => newRows.indexOf(item) < 0)
+    );
+
+    let newRows3 = newRows2.concat(
+      softwareApps.filter(item => newRows2.indexOf(item) < 0)
+    );
+    return newRows3;
+  };
+
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
@@ -326,7 +365,7 @@ export default function EnhancedTable({ rows, setRows, page, setPage }) {
               {/* if you don't need to support IE11, you can replace the `stableSort` call with:
               rows.slice().sort(getComparator(order, orderBy)) */}
               {stableSort(
-                rows.filter(row => row.search),
+                switchFilters().filter(row => row.search),
                 getComparator(order, orderBy)
               )
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
