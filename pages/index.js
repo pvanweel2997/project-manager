@@ -28,6 +28,7 @@ import AddIcon from '@mui/icons-material/Add';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { makeStyles } from '@mui/styles';
 import { format } from 'date-fns';
+import EnhancedTable from '../src/ui/EnhancedTable';
 
 import {
   MuiPickersUtilsProvider,
@@ -152,6 +153,7 @@ const ProjectManager = () => {
   const [platforms, setPlatforms] = useState([]);
   const [features, setFeatures] = useState([]);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(0);
 
   const addProject = () => {
     setRows([
@@ -180,7 +182,6 @@ const ProjectManager = () => {
   };
 
   const disableAddButton = () => {
-    console.log('=== made it here');
     if (service === 'Website') {
       if (
         name.length === 0 ||
@@ -203,7 +204,6 @@ const ProjectManager = () => {
         return true;
       }
     }
-    console.log('=== returning false');
     return false;
   };
 
@@ -226,7 +226,7 @@ const ProjectManager = () => {
         : (newRows[index].search = false)
     );
     setRows(newRows);
-    console.log(newRows);
+    setPage(0);
   };
 
   return (
@@ -314,106 +314,13 @@ const ProjectManager = () => {
             />
           </FormGroup>
         </Grid>
-        <Grid
-          item
-          container
-          justifyContent="flex-end"
-          style={{ marginTop: '5em' }}
-        >
-          <Grid item style={{ marginRight: 75 }}>
-            <FilterListIcon color="secondary" style={{ fontSize: 50 }} />
-          </Grid>
-        </Grid>
-        <Grid item style={{ marginBottom: '15em' }}>
-          <TableContainer component={Paper} elevation={0}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell className={classes.tablecellHead} align="center">
-                    Name
-                  </TableCell>
-                  <TableCell className={classes.tablecellHead} align="center">
-                    Date
-                  </TableCell>
-                  <TableCell className={classes.tablecellHead} align="center">
-                    Service
-                  </TableCell>
-                  <TableCell className={classes.tablecellHead} align="center">
-                    Features
-                  </TableCell>
-                  <TableCell className={classes.tablecellHead} align="center">
-                    complexity
-                  </TableCell>
-                  <TableCell className={classes.tablecellHead} align="center">
-                    Platforms
-                  </TableCell>
-                  <TableCell className={classes.tablecellHead} align="center">
-                    Users
-                  </TableCell>
-                  <TableCell className={classes.tablecellHead} align="center">
-                    Total
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows
-                  .filter(row => row.search)
-                  .map((row, index) => (
-                    <TableRow key={index}>
-                      <TableCell
-                        className={classes.tablecellBody}
-                        align="center"
-                      >
-                        {row.name}
-                      </TableCell>
-                      <TableCell
-                        className={classes.tablecellBody}
-                        align="center"
-                      >
-                        {row.date}
-                      </TableCell>
-                      <TableCell
-                        className={classes.tablecellBody}
-                        align="center"
-                      >
-                        {row.service}
-                      </TableCell>
-                      <TableCell
-                        className={classes.tablecellBody}
-                        style={{ maxWidth: '5em' }}
-                        align="center"
-                      >
-                        {row.features}
-                      </TableCell>
-                      <TableCell
-                        className={classes.tablecellBody}
-                        align="center"
-                      >
-                        {row.complexity}
-                      </TableCell>
-                      <TableCell
-                        className={classes.tablecellBody}
-                        align="center"
-                      >
-                        {row.platform}
-                      </TableCell>
-                      <TableCell
-                        className={classes.tablecellBody}
-                        align="center"
-                      >
-                        {row.users}
-                      </TableCell>
-                      <TableCell
-                        className={classes.tablecellBody}
-                        align="center"
-                      >
-                        {row.total}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+        <Grid item style={{ marginTop: '5em', marginBottom: '35em' }}>
+          <EnhancedTable
+            rows={rows}
+            setRows={setRows}
+            page={page}
+            setPage={setPage}
+          />
         </Grid>
         <Dialog
           fullWidth

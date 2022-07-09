@@ -85,13 +85,6 @@ export default createTheme({
     },
   },
   overrides: {
-    MuiSvgIcon: {
-      root: {
-        '&.MuiSelectIcon': {
-          fill: arcOrange,
-        },
-      },
-    },
     MuiTableCell: {
       head: {
         fontSize: '1rem',
@@ -104,6 +97,26 @@ export default createTheme({
         color: arcGrey,
         borderColor: arcBlue,
         borderWidth: 2,
+      },
+    },
+    MuiTableSortLabel: {
+      root: {
+        '&:hover': {
+          color: arcOrange,
+        },
+        '&.MuiTableSortLabel-active': {
+          color: arcOrange,
+        },
+      },
+      icon: {
+        fill: arcOrange,
+      },
+    },
+    MuiSvgIcon: {
+      root: {
+        '&.MuiSelect-icon': {
+          fill: arcOrange,
+        },
       },
     },
     MuiFormControlLabel: {
