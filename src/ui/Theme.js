@@ -1,10 +1,10 @@
-import { createTheme } from '@mui/material';
+import { createTheme } from '@mui/material/styles';
 
 const arcBlue = '#0B72B9';
 const arcOrange = '#FFBA60';
 const arcGrey = '#868686';
 
-const theme = createTheme({
+export default createTheme({
   palette: {
     common: {
       blue: arcBlue,
@@ -85,6 +85,13 @@ const theme = createTheme({
     },
   },
   overrides: {
+    MuiSvgIcon: {
+      root: {
+        '&.MuiSelectIcon': {
+          fill: arcOrange,
+        },
+      },
+    },
     MuiTableCell: {
       head: {
         fontSize: '1rem',
@@ -130,5 +137,3 @@ const theme = createTheme({
     },
   },
 });
-
-export default theme;
