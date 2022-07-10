@@ -14,12 +14,23 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Checkbox from '@mui/material/Checkbox';
 import IconButton from '@mui/material/IconButton';
-import { Tooltip, Snackbar, Button } from '@mui/material';
+import {
+  Tooltip,
+  Snackbar,
+  Button,
+  Menu,
+  MenuItem,
+  TextField,
+  InputAdornment,
+  Chip,
+  Grid,
+} from '@mui/material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
+import { makeStyles } from '@mui/styles';
 
 // This method is created for cross-browser compatibility, if you don't
 // need to support IE11, you can use Array.prototype.sort() directly
@@ -123,19 +134,74 @@ function EnhancedTableHead(props) {
   );
 }
 
+const useToolbarStyles = makeStyles(theme => ({
+  root: {
+    paddingLeft: theme.spacing(2),
+    paddingRight: theme.spacing(1),
+  },
+  highlight:
+    theme.palette.type === 'light'
+      ? {
+          color: theme.palette.secondary.main,
+          backgroundColor: lighten(theme.palette.secondary.light, 0.85),
+        }
+      : {
+          color: theme.palette.text.primary,
+          backgroundColor: theme.palette.secondary.dark,
+        },
+  title: {
+    flex: '1 1 100%',
+  },
+  menu: {
+    '&:hover': {
+      backgroundColor: '#fff',
+    },
+    '&.Mui-focusVisible': {
+      backgroundColor: '#fff',
+    },
+  },
+  totalFilter: {
+    fontSize: '2rem',
+    color: theme.palette.common.orange,
+  },
+  dollarSign: {
+    fontSize: '1.5rem',
+    color: theme.palette.common.orange,
+  },
+}));
+
 const EnhancedTableToolbar = ({
   selected,
   setSelected,
   numSelected,
   rows,
   setRows,
+  filterPrice,
+  setFilterPrice,
+  totalFilter,
+  setTotalFilter,
 }) => {
+  const classes = useToolbarStyles();
   const [undo, setUndo] = React.useState([]);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [openMenu, setOpenMenu] = React.useState(false);
+
   const [alert, setAlert] = React.useState({
     open: false,
     backgroundColor: '#FF3232',
     message: 'Row deleted!',
   });
+
+  const handleClick = e => {
+    setAnchorEl(e.currentTarget);
+    setOpenMenu(true);
+  };
+
+  const handleClose = e => {
+    setAnchorEl(null);
+    setOpenMenu(false);
+  };
+
   const onDelete = () => {
     const newRows = [...rows];
     const selectedRows = newRows.filter(row => selected.includes(row.name));
@@ -154,6 +220,48 @@ const EnhancedTableToolbar = ({
     Array.prototype.push.apply(newRows, ...redo);
     setRows(newRows);
     // setUndo([]);
+  };
+
+  const handleTotalFilter = e => {
+    setFilterPrice(e.target.value);
+
+    if (e.target.value === '') {
+      return;
+    }
+
+    const newRows = [...rows];
+    newRows.map(row =>
+      eval(
+        `${e.target.value} ${
+          totalFilter === '=' ? '===' : totalFilter
+        }  ${row.total.slice(1, row.total.length)}`
+      )
+        ? (row.search = true)
+        : (row.search = false)
+    );
+
+    setRows(newRows);
+  };
+
+  const filterChange = operator => {
+    if (filterPrice === '') {
+      const newRows = [...rows];
+      newRows.map(row => (row.search = true));
+      setRows(newRows);
+      return;
+    }
+
+    const newRows = [...rows];
+    newRows.map(row =>
+      eval(
+        `${filterPrice} ${
+          operator === '=' ? '===' : operator
+        }  ${row.total.slice(1, row.total.length)}`
+      )
+        ? (row.search = true)
+        : (row.search = false)
+    );
+    setRows(newRows);
   };
 
   return (
@@ -192,7 +300,7 @@ const EnhancedTableToolbar = ({
         </Tooltip>
       ) : (
         <Tooltip title="Filter list">
-          <IconButton>
+          <IconButton onClick={handleClick}>
             <FilterListIcon style={{ fontSize: 50 }} color="secondary" />
           </IconButton>
         </Tooltip>
@@ -222,9 +330,89 @@ const EnhancedTableToolbar = ({
 
         // autoHideDuration={4000}
       />
+      <Menu
+        id="simple-menu"
+        anchorEl={anchorEl}
+        open={openMenu}
+        onClose={handleClose}
+        elevation={0}
+        style={{ zIndex: 1302 }}
+        keepMounted
+      >
+        <MenuItem classes={{ root: classes.menu }}>
+          <TextField
+            value={filterPrice}
+            onChange={handleTotalFilter}
+            placeholder="Enter a price to filter"
+            InputProps={{
+              type: 'number',
+              startAdornment: (
+                <InputAdornment position="start">
+                  <span className={classes.dollarSign}>$</span>
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment
+                  onClick={() => {
+                    setTotalFilter(
+                      totalFilter === '>'
+                        ? '<'
+                        : totalFilter === '<'
+                        ? '='
+                        : '>'
+                    );
+                    filterChange(
+                      totalFilter === '>'
+                        ? '<'
+                        : totalFilter === '<'
+                        ? '='
+                        : '>'
+                    );
+                  }}
+                  position="end"
+                  style={{ cursor: 'pointer' }}
+                >
+                  <span className={classes.totalFilter}>{totalFilter}</span>
+                </InputAdornment>
+              ),
+            }}
+            variant="standard"
+          ></TextField>
+        </MenuItem>
+      </Menu>
     </Toolbar>
   );
 };
+
+const useStyles = makeStyles(theme => ({
+  root: {
+    width: '100%',
+  },
+  paper: {
+    width: '100%',
+    marginBottom: theme.spacing(2),
+  },
+  table: {
+    minWidth: 750,
+  },
+  visuallyHidden: {
+    border: 0,
+    clip: 'rect(0 0 0 0)',
+    height: 1,
+    margin: -1,
+    overflow: 'hidden',
+    padding: 0,
+    position: 'absolute',
+    top: 20,
+    width: 1,
+  },
+  chip: {
+    marginRight: '2em',
+    backgroundColor: theme.palette.common.blue,
+    color: '#fff',
+  },
+}));
+
 export default function EnhancedTable({
   rows,
   setRows,
@@ -235,10 +423,13 @@ export default function EnhancedTable({
   androidChecked,
   softwareChecked,
 }) {
+  const classes = useStyles();
   const [order, setOrder] = React.useState('asc');
   const [orderBy, setOrderBy] = React.useState('name');
   const [selected, setSelected] = React.useState([]);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [filterPrice, setFilterPrice] = React.useState('');
+  const [totalFilter, setTotalFilter] = React.useState('>');
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -303,7 +494,6 @@ export default function EnhancedTable({
   const isSelected = name => selected.indexOf(name) !== -1;
 
   const switchFilters = () => {
-    console.log(rows);
     if (!websiteChecked && !iOSChecked && !androidChecked && !softwareChecked) {
       return rows;
     }
@@ -333,6 +523,26 @@ export default function EnhancedTable({
     return newRows3;
   };
 
+  const priceFilters = switchRows => {
+    if (filterPrice === '') {
+      return switchRows;
+    }
+
+    const newRows = [...switchRows];
+    newRows.map(row =>
+      eval(
+        `${filterPrice} ${
+          totalFilter === '=' ? '===' : totalFilter
+        }  ${row.total.slice(1, row.total.length)}`
+      )
+        ? row.search === false
+          ? null
+          : (row.search = true)
+        : (row.search = false)
+    );
+    return newRows;
+  };
+
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
@@ -346,6 +556,10 @@ export default function EnhancedTable({
           numSelected={selected.length}
           rows={rows}
           setRows={setRows}
+          filterPrice={filterPrice}
+          setFilterPrice={setFilterPrice}
+          totalFilter={totalFilter}
+          setTotalFilter={setTotalFilter}
         />
         <TableContainer>
           <Table
@@ -365,7 +579,7 @@ export default function EnhancedTable({
               {/* if you don't need to support IE11, you can replace the `stableSort` call with:
               rows.slice().sort(getComparator(order, orderBy)) */}
               {stableSort(
-                switchFilters().filter(row => row.search),
+                priceFilters(switchFilters()).filter(row => row.search),
                 getComparator(order, orderBy)
               )
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
@@ -428,12 +642,34 @@ export default function EnhancedTable({
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"
-          count={rows.filter(row => row.search).length}
+          count={priceFilters(switchFilters()).filter(row => row.search).length}
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={handleChangePage}
           onRowsPerPageChange={handleChangeRowsPerPage}
         />
+        <Grid container justifyContent={'flex-end'}>
+          <Grid item>
+            {filterPrice !== '' ? (
+              <Chip
+                onDelete={() => {
+                  setFilterPrice('');
+                  const newRows = [...rows];
+                  newRows.map(row => (row.search = true));
+                  setRows(newRows);
+                }}
+                className={classes.chip}
+                label={
+                  totalFilter === '>'
+                    ? `Less Than $${filterPrice}`
+                    : totalFilter === '<'
+                    ? `Greater Than $${filterPrice}`
+                    : `Equal to $${filterPrice}`
+                }
+              />
+            ) : null}
+          </Grid>
+        </Grid>
       </Paper>
     </Box>
   );
